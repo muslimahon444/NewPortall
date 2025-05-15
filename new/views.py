@@ -4,77 +4,90 @@ from .forms import NewsArticleForm
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.contrib.auth import logout
-
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.urls import reverse_lazy
 
 def home(request):
-    # Получаем параметры фильтрации
-    search_query = request.GET.get('q', '')
-    category_id = request.GET.get('category', '')
-    
-    # Базовый запрос (только опубликованные статьи)
-    news_list = NewArticle.objects.filter(published=True).order_by('-created_at')
-    
-    # Применяем фильтры
-    if search_query:
-        news_list = news_list.filter(
-            Q(title__icontains=search_query) | 
-            Q(content__icontains=search_query)
+    if query := request.GET.get('q'):
+        news = NewArticle.objects.filter(
+            Q(title__icontains=query) | Q(content__icontains=query)
         )
-    
-    if category_id:
-        news_list = news_list.filter(category_id=category_id)
-    
-    # Пагинация
-    paginator = Paginator(news_list, 5)  # 5 новостей на страницу
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
-    # Получаем все категории
+    else:
+        news = NewArticle.objects.all()
+        
     categories = Category.objects.all()
     news = NewArticle.objects.all()
-    
     context = {
-        'page_obj': page_obj,  # Используем page_obj вместо news
-        'categories': categories,
-        'search_query': search_query,
-        'selected_category': category_id,
-        'news': news
-    }
-    return render(request, 'home.html', context)
-
-def bod(request, pk=None):
-    if pk:
-        # Если pk передан, то это редактирование существующей статьи
-        news = get_object_or_404(NewArticle, pk=pk)
-    else:
-        # Иначе создаем новую статью
-        news = NewArticle()
     
+        'categories': categories,
+        
+        'news': news,
+    }
+    return render(request, 'new/home.html', context)
+
+def category(request, slug):
+    category = get_object_or_404(Category, slug=slug)
+    categories = Category.objects.all()
+    news_list = NewArticle.objects.filter(category=category)
+    
+
+    context = {
+        'category': category,
+        'categories': categories,
+        
+        'news_list': news_list,
+
+    }
+    return render(request, 'new/category.html', context)
+
+def create_news(request):
     if request.method == 'POST':
-        # Обработка формы
-        form = NewsArticleForm(request.POST, request.FILES, instance=news)
+        form = NewsArticleForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
-            return redirect('home')
+            news = form.save(commit=False)  # Получаем объект, но не сохраняем в БД
+            news.author = request.user      # Устанавливаем автора
+            news.save()  
+            return redirect('new:home')
     else:
-        form = NewsArticleForm(instance=news)
+        form = NewsArticleForm()
+
+    
+    return render(request, 'new/create_news.html', {'form': form})
+
+class NewsUpdateView(UpdateView):
+    model = NewArticle
+    form_class = NewsArticleForm
+    template_name = 'new/update.html'
+    success_url = reverse_lazy('new:home')
+
+
+
+
+class NewsDeleteView(DeleteView):
+    model = NewArticle 
+    template_name = 'new/delete_news.html'
+    context_object_name = 'new'
+    success_url = reverse_lazy('new:home')
+
+def news_delete_view(request, pk):
+    new = NewArticle.objects.get(pk=pk)
+    new.delete()
+    return redirect('new:home')
+    
+def news_detail_view(request, pk):
+    new = get_object_or_404(NewArticle, pk=pk)
+    news_list = NewArticle.objects.filter(category=new.category).exclude(pk=new.pk)
+    categories = Category.objects.all()
+
+    
     
     categories = Category.objects.all()
-    
     context = {
-        'form': form,
+        'new': new,
         'categories': categories,
+        'news_list': news_list,
     }
-    return render(request, 'bod.html', context)
-
-
-def news_delete(request):
-    return render(request, 'news_delete.html')
-
-def logout_view(request):
-    
-    logout(request)  
-    return redirect('home')
+    return render(request, 'new/detail.html', context)
 
 
 

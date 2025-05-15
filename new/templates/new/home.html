@@ -69,7 +69,7 @@
 
 <nav class="navbar navbar-expand-lg mb-4">
   <div class="container">
-    <a class="navbar-brand" href="{% url 'home' %}">NewsPortal</a>
+    <a class="navbar-brand" href="{% url 'new:home' %}">NewsPortal</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -79,7 +79,7 @@
         
         {% for cat in categories %}
           <li class="nav-item">
-            <a class="nav-link {% if selected_category == cat.id|stringformat:'s' %}active{% endif %}" href="?category={{ cat.id }}">
+            <a class="nav-link"    href="{% url 'new:category' cat.slug  %}">
               {{ cat.name }}
             </a>
           </li>
@@ -87,26 +87,30 @@
         
       </ul>
 
-      <form method="get" action="{% url 'home' %}" class="mb-4">
+      <form method="get" action="." class="mb-4">
         <div class="input-group">
-          <input type="text" class="form-control" name="q" placeholder="Поиск..." value="{{ search_query|default:'' }}">
-          {% if selected_category %}
-            <input type="hidden" name="category" value="{{ selected_category }}">
-          {% endif %}
+          <input type="text" class="form-control" name="q" placeholder="Поиск..." value="{{ request.GET.q}}">
+          
           <button class="btn btn-primary" type="submit">Искать</button>
         </div>
       </form>
+      
+            
 
-      {% if user.is_authenticated %}
+      {% if request.user.is_authenticated %}
         <div class="d-flex">
-          {% if user.is_staff %}
-            <a href="{% url 'admin:index' %}" class="btn btn-sm btn-outline-secondary me-2">Админка</a>
-          {% endif %}
-          <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-danger">Выйти</a>
+          
+          
+            <a class="btn btn-sm btn-outline-secondary me-2" href="{% url 'new:create_news' %}">Создать новость</a>
+          
+            <a href="{% url 'user_app:logout' %}" class="btn btn-sm btn-outline-danger">Выйти</a>
         </div>
       {% else %}
-        <a href="#" class="btn btn-sm btn-outline-primary">Войти</a>
+        <a href="{% url 'user_app:login' %}" class="btn btn-sm btn-outline-primary">Войти</a>
+        <a href="{% url 'user_app:register' %}" class="btn btn-sm btn-outline-secondary me-2">Регистрация</a>
       {% endif %}
+
+  
     </div>
   </div>
 </nav>
@@ -119,25 +123,39 @@
                   <div class="container">
                     <div class="card h-90">
                         <a href="#">
-                            <img style="width: 500px; "
+                          {% if new.image and new.image.url  %}
+                            <img style="width: 590px; "
                                 src="{{ new.image.url }}" alt="">
+
+                                {% endif %}
                                 
                         </a>
+                        {% if request.user.is_authenticated %}
+                        <div class="card_ty" style="margin-top: 20px; text-align: center;">
+                          <button class="btn btn-primary"><a style="text-decoration: none; color: #fff;" href="{% url 'new:update' new.pk %}"> Редактировать 
+                            </a></button>
+                            <button class="btn btn-primary"><a style="text-decoration: none; color: #fff;" href="{% url 'new:delete_news' new.pk %}"> Удалить
+                          
+                        </div>
+                        {% endif %}
                         <div class="card-body">
-                            <h1 >
+                          
+                            <h1 ><a href="{% url 'new:detail' new.pk %}" class="card-title">
                                 {{ new.title }}
-                            </h1>
+                            </a></h1>
                             <h4>{{ new.content }}</h4>
+
+                            
+                            
                         </div>
                         <div class="card-footer text-center">
                             
                         </div>
+                        
                     </div>
                 </div>
                 </div>
-              
-                
-    <!-- Добавляем перенос строки после каждых 2 карточек -->
+<!-- Добавляем перенос строки после каждых 2 карточек -->
     {% if forloop.counter|divisibleby:2 and not forloop.last %}
       </div><div class="row mt-4" style="display: flex; justify-content: center;">
     {% endif %}
