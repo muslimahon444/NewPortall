@@ -3,7 +3,7 @@ from .models import NewArticle, Category
 from .forms import NewsArticleForm
 from django.db.models import Q
 from django.core.paginator import Paginator
-from django.contrib.auth import logout
+
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 
@@ -88,6 +88,24 @@ def news_detail_view(request, pk):
         'news_list': news_list,
     }
     return render(request, 'new/detail.html', context)
+
+
+
+def result_serch(request):
+    query = request.GET.get('q')
+    result = NewArticle.objects.filter(title__icontains=query) if query else []
+    news = NewArticle.objects.all()
+    categories = Category.objects.all()
+    
+    context = {
+        'categories': categories,
+        'news': news,
+        'result': result,
+        'query': query,
+    }
+    
+    return render(request, 'new/result_serch.html', context)
+
 
 
 

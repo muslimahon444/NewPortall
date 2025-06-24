@@ -106,7 +106,7 @@
           <a href="#" class="btn btn-sm btn-outline-danger">Выйти</a>
         </div>
       {% else %}
-        <a href="#" class="btn btn-sm btn-outline-primary">Войти</a>
+        <a href="{% url 'user_app:login' %}" class="btn btn-sm btn-outline-primary">Войти</a>
       {% endif %}
     </div>
   </div>

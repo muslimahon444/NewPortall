@@ -1,201 +1,80 @@
+{% extends "new/base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <title>NewsPortal</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  
-  <!-- Bootstrap 5 -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  
-  <!-- Google Fonts + Custom style -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: #f8f9fa;
-    }
-    .navbar {
-      background-color: white;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
-    .navbar-brand {
-      font-weight: 600;
-      font-size: 1.5rem;
-      color: #007bff !important;
-    }
-    .nav-link {
-      color: #333 !important;
-      font-weight: 500;
-      transition: 0.2s;
-    }
-    .nav-link:hover {
-      color: #007bff !important;
-    }
-    .nav-link.active {
-      color: #0d6efd !important;
-      border-bottom: 2px solid #0d6efd;
-    }
-    .search-box input {
-      border-radius: 50px;
-      padding: 0.5rem 1rem;
-    }
-    .search-box button {
-      border-radius: 50px;
-    }
-    .card {
-      height: 100%;
-      transition: transform 0.2s;
-    }
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    }
-    .card-img-top {
-      height: 200px;
-      object-fit: cover;
-    }
-    .card-title {
-      font-size: 1.25rem;
-      margin-bottom: 0.75rem;
-    }
-    .card-text {
-      color: #555;
-    }
-  </style>
-</head>
-<body>
 
-<nav class="navbar navbar-expand-lg mb-4">
-  <div class="container">
-    <a class="navbar-brand" href="{% url 'new:home' %}">NewsPortal</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    
-    <div class="collapse navbar-collapse" id="navbarMenu">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        
-        {% for cat in categories %}
-          <li class="nav-item">
-            <a class="nav-link"    href="{% url 'new:category' cat.slug  %}">
-              {{ cat.name }}
-            </a>
-          </li>
-        {% endfor %}
-        
-      </ul>
 
-      <form method="get" action="." class="mb-4">
-        <div class="input-group">
-          <input type="text" class="form-control" name="q" placeholder="Поиск..." value="{{ request.GET.q}}">
-          
-          <button class="btn btn-primary" type="submit">Искать</button>
-        </div>
-      </form>
-      
-            
+{% block title %}Главная{% endblock %}
 
+{% block content %}
+
+<div class="hero-banner">
+  <img src="{% static 'images/news.jpg' %}" alt="Главное изображение">
+  <div class="hero-text">
+    <h1>Добро пожаловать в NewsPortal</h1>
+    <p>Оперативные, актуальные и мировые новости каждый день</p>
+  </div>
+</div>
+
+<h2 style="text-align: center;">Последние новости</h2>
+
+
+<div class="card-grid">
+  {% for new in news %}
+    <div class="card">
+      <img src="{{ new.image.url }}" alt="">
       {% if request.user.is_authenticated %}
-        <div class="d-flex">
-          
-          
-            <a class="btn btn-sm btn-outline-secondary me-2" href="{% url 'new:create_news' %}">Создать новость</a>
-          
-            <a href="{% url 'user_app:logout' %}" class="btn btn-sm btn-outline-danger">Выйти</a>
-        </div>
-      {% else %}
-        <a href="{% url 'user_app:login' %}" class="btn btn-sm btn-outline-primary">Войти</a>
-        <a href="{% url 'user_app:register' %}" class="btn btn-sm btn-outline-secondary me-2">Регистрация</a>
-      {% endif %}
+      <div class="card_ty" style="margin-top: 20px; text-align: center;">
+                      <button class="btn btn-primary"><a style="text-decoration: none; color: #fff;" href="{% url 'new:update' new.pk %}"> Редактировать 
+                        </a></button>
+                        <button class="btn btn-primary"><a style="text-decoration: none; color: #fff;" href="{% url 'new:delete_news' new.pk %}"> Удалить
+                      
+                    </div>
+                    {% endif %}
+      <div class="card-body">
+        <h3>{{ new.title }}</h3>
+        <h3>{{ new.content|truncatewords:30 }}</h3>
+        <p>{{ news.content|striptags|truncatewords:125 }}</p>
+        <a href="{% url 'new:detail' new.pk %}" class="read-more-btn">Читать далее</a>
+       
+      </div>
+    </div>
+  {% endfor %}
+</div>
 
-  
+
+
+
+
+
+{% endblock %}
+
+{% block footer %}
+<footer class="site-footer">
+  <div class="footer-container">
+    <div class="footer-section">
+      <h4>О нас</h4>
+      <p>Мы публикуем только проверенные и актуальные новости со всего мира. Следите за последними событиями вместе с нами.</p>
+    </div>
+
+    <div class="footer-section">
+      <h4>Разделы</h4>
+      <ul>
+        <li><a href="/">Главная</a></li>
+        <li><a href="/categories/">Категории</a></li>
+        <li><a href="/about/">О проекте</a></li>
+        <li><a href="/contact/">Контакты</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-section">
+      <h4>Контакты</h4>
+      <p>Email: news@example.com</p>
+      <p>Телефон: +996 700 123 456</p>
     </div>
   </div>
-</nav>
 
+  <div class="footer-bottom">
+    &copy; 2025 NewsPortal. Все права защищены.
+  </div>
+</footer>
+{% endblock%}
 
-<div class="row"  style="display: flex; justify-content: center;">
-  
-                {% for new in news %}
-                <div class="col-lg-4 col-md-6 mb-4">
-                  <div class="container">
-                    <div class="card h-90">
-                        <a href="#">
-                          {% if new.image and new.image.url  %}
-                            <img style="width: 590px; "
-                                src="{{ new.image.url }}" alt="">
-
-                                {% endif %}
-                                
-                        </a>
-                        {% if request.user.is_authenticated %}
-                        <div class="card_ty" style="margin-top: 20px; text-align: center;">
-                          <button class="btn btn-primary"><a style="text-decoration: none; color: #fff;" href="{% url 'new:update' new.pk %}"> Редактировать 
-                            </a></button>
-                            <button class="btn btn-primary"><a style="text-decoration: none; color: #fff;" href="{% url 'new:delete_news' new.pk %}"> Удалить
-                          
-                        </div>
-                        {% endif %}
-                        <div class="card-body">
-                          
-                            <h1 ><a href="{% url 'new:detail' new.pk %}" class="card-title">
-                                {{ new.title }}
-                            </a></h1>
-                            <h4>{{ new.content }}</h4>
-
-                            
-                            
-                        </div>
-                        <div class="card-footer text-center">
-                            
-                        </div>
-                        
-                    </div>
-                </div>
-                </div>
-<!-- Добавляем перенос строки после каждых 2 карточек -->
-    {% if forloop.counter|divisibleby:2 and not forloop.last %}
-      </div><div class="row mt-4" style="display: flex; justify-content: center;">
-    {% endif %}
-  {% endfor %}
-  
-</div>
-  
-  <!-- Пагинация -->
-  {% if is_paginated %}
-    <nav aria-label="Page navigation">
-      <ul class="pagination justify-content-center mt-4">
-        {% if page_obj.has_previous %}
-          <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">Назад</a>
-          </li>
-        {% endif %}
-        
-        {% for num in page_obj.paginator.page_range %}
-          {% if page_obj.number == num %}
-            <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
-          {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-            <li class="page-item">
-              <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">{{ num }}</a>
-            </li>
-          {% endif %}
-        {% endfor %}
-        
-        {% if page_obj.has_next %}
-          <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">Вперед</a>
-          </li>
-        {% endif %}
-      </ul>
-    </nav>
-  {% endif %}
-</div>
-
-
-
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>

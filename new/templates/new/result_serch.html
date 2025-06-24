@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Результаты поиска</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e6f0ff;
+            color: #003366;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #005f99;
+            padding: 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        form {
+            margin-bottom: 30px;
+        }
+
+        input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #005f99;
+            color: white;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #003f66;
+        }
+
+        .article {
+            border-bottom: 1px solid #ccc;
+            padding: 15px 0;
+        }
+
+        .article:last-child {
+            border-bottom: none;
+        }
+
+        .categories {
+            margin-top: 30px;
+            background-color: #f2f9ff;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .category {
+            display: inline-block;
+            background-color: #cce0ff;
+            color: #003366;
+            padding: 6px 10px;
+            margin: 5px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .no-results {
+            font-style: italic;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Поиск новостей</h1>
+</header>
+
+
+
+<div class="container">
+    <!-- Форма поиска -->
+    <form method="get" action="{% url 'new:result_serch' %}">
+
+        <input type="text" name="q" placeholder="Введите заголовок..." value="{{ query|default_if_none:'' }}">
+        <button type="submit">Поиск</button>
+       
+    </form>
+    <a href="{% url 'new:home' %}"><button >Главная</button></a>
+
+    <!-- Результаты поиска -->
+    <h2>Результаты поиска:</h2>
+
+    {% if query %}
+        {% if result %}
+            {% for article in result %}
+                <div class="article">
+                    <h3>{{ article.title }}</h3>
+                    <p>{{ article.content|truncatewords:30 }}</p>
+                    <a href="{% url 'new:detail' article.pk %}" class="read-more-btn">Читать далее</a>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="no-results">По запросу "{{ query }}" ничего не найдено.</p>
+        {% endif %}
+    {% else %}
+        <p class="no-results">Введите запрос для поиска новостей.</p>
+    {% endif %}
+
+    <!-- Категории -->
+    <div class="categories">
+        <h3>Категории:</h3>
+        {% for category in categories %}
+            <span class="category">{{ category.name }}</span>
+        {% endfor %}
+    </div>
+</div>
+
+</body>
+</html>

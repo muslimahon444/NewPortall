@@ -17,14 +17,9 @@ urlpatterns = [
     path('update/<int:pk>', views.NewsUpdateView.as_view(), name='update'),
     path('delete/<int:pk>', views.NewsDeleteView.as_view(), name='delete_news'),
     path('detail/<int:pk>/', views.news_detail_view, name='detail'),
-    
+     path('result_serch/', views.result_serch, name='result_serch'),
     
 
-    
-    
-    
-    
-    
 ]
 
 if settings.DEBUG:
